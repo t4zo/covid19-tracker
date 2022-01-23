@@ -34,6 +34,6 @@ export default defineComponent({
   name: 'Boxes',
   props: {
     stats: {}
-  }
+  },
 })
 </script>

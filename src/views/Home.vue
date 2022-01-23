@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, ref, reactive, onMounted } from "vue";
 import axios from "axios";
 
 import Title from '@/components/Title';
@@ -32,45 +32,98 @@ export default defineComponent({
     Boxes,
     CountrySelect,
   },
-  data() {
-    return {
+  async setup() {
+    const state = reactive({
       loading: true,
       title: 'Global',
       stats: {},
       countries: [],
       date: Date,
       loadingImage: require('../assets/loading.gif')
+    });
+
+    // onMounted(async () => {
+      await setInitialState();
+      state.loading = false;
+    // });
+
+    function changeCountryStats(country) {
+      console.log(state)
+      state.stats = country;
+      state.title = country.Country;
+      console.log(state)
     };
-  },
-  async created() {
-    await this.setInitialState();
-    this.loading = false;
-  },
-  methods: {
-    async fetchCovidData() {
+
+    function clearCountrySelect() {
+      state.value.title = 'Global';
+      setInitialState();
+    };
+
+    async function fetchCovidData() {
       try {
       const response = await axios.get("https://api.covid19api.com/summary");
       return response.data;
       } catch(error) {
         console.error(error);
       }
-    },
-    changeCountryStats(country) {
-      this.stats = country;
-      this.title = country.Country
-    },
-    clearCountrySelect() {
-      this.title = 'Global';
-      this.setInitialState();
-    },
-    async setInitialState() {
-      this.loading = true;
-      const data = await this.fetchCovidData();
-      this.stats = data.Global;
-      this.date = new Date(data.Date);
-      this.countries = data.Countries;
-      this.loading = false;
-    },
-  },
-});
+    };
+
+    async function setInitialState() {
+      state.loading = true;
+      const data = await fetchCovidData();
+      state.stats = data.Global;
+      state.date = new Date(data.Date);
+      state.countries = data.Countries;
+      state.loading = false;
+    };
+
+    const response = {
+      ...state,
+      changeCountryStats,
+      clearCountrySelect,
+    };
+
+    return response;
+  }});
+// data() {
+//   return {
+//     loading: true,
+//     title: 'Global',
+//     stats: {},
+//     countries: [],
+//     date: Date,
+//     loadingImage: require('../assets/loading.gif')
+//   };
+// },
+// async created() {
+//   await this.setInitialState();
+//   this.loading = false;
+// },
+//   methods: {
+//     async fetchCovidData() {
+//       try {
+//       const response = await axios.get("https://api.covid19api.com/summary");
+//       return response.data;
+//       } catch(error) {
+//         console.error(error);
+//       }
+//     },
+//     changeCountryStats(country) {
+//       this.stats = country;
+//       this.title = country.Country
+//     },
+//     clearCountrySelect() {
+//       this.title = 'Global';
+//       this.setInitialState();
+//     },
+//     async setInitialState() {
+//       this.loading = true;
+//       const data = await this.fetchCovidData();
+//       this.stats = data.Global;
+//       this.date = new Date(data.Date);
+//       this.countries = data.Countries;
+//       this.loading = false;
+//     },
+//   },
+// });
 </script>
